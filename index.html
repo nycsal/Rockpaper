@@ -3,24 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scatter Match</title>
+    <title>Scatter Match Game</title>
     <style>
-        body {
+        html, body {
             margin: 0;
+            padding: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            height: 100%;
             background: #2c3e50;
             color: white;
-            touch-action: manipulation;
+            font-family: Arial, sans-serif;
         }
-
-        #gameContainer {
-            position: relative;
-            width: 100vw;
-            height: 80vh;
+        #scoreboard {
+            display: flex;
+            gap: 20px;
+            margin: 20px;
+            font-size: 1.2em;
+        }
+        #timer {
+            font-size: 1.5em;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+        #progressBar {
+            width: 300px;
+            height: 20px;
+            background: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
             margin: 20px auto;
         }
-
+        #progressFill {
+            height: 100%;
+            background: #27ae60;
+            transition: width 0.3s;
+            width: 0%;
+        }
+        #gameContainer {
+            position: relative;
+            width: 90vw;
+            max-width: 1200px;
+            height: 60vh;
+            min-height: 400px;
+            margin: 0 auto;
+            background: #34495e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
         .game-item {
             position: absolute;
             width: 50px;
@@ -31,78 +61,212 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            transition: transform 0.2s;
+            font-size: 28px;
+            transition: transform 0.25s, opacity 0.25s, background 0.25s;
             user-select: none;
         }
-
-        .game-item:active {
-            transform: scale(0.95);
+        .game-item.selected {
+            background: #3498db;
         }
-
-        /* Keep previous scoreboard and timer styles */
+        .game-item.matched {
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .instructions {
+            background: #34495e;
+            padding: 16px 24px;
+            border-radius: 10px;
+            margin: 20px auto;
+            text-align: center;
+            max-width: 700px;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
-    <!-- Keep previous HTML structure -->
-    
+    <div id="scoreboard">
+        <div>Level: <span id="level">1</span></div>
+        <div>Score: <span id="score">0</span></div>
+    </div>
+    <div id="timer">45</div>
+    <div id="progressBar"><div id="progressFill"></div></div>
+    <div id="gameContainer"></div>
+    <div id="instructions" class="instructions"></div>
+
     <script>
-        // Modified initialization function
-        function initGame() {
+        // Emoji pool for pairs (expand as needed)
+        const emojis = [
+            '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯',
+            '🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦄',
+            '🐙','🦋','🐞','🐢','🐍','🦖','🦕','🦀','🐡','🐬',
+            '🐳','🦈','🦓','🦒','🦘','🦥','🦦','🦨','🦩','🦚',
+            '🦜','🦢','🦩','🦔','🐲','🐉','🐋','🦭','🦧','🦮'
+        ];
+
+        const levelConfig = [
+            { pairs: 10, time: 45 },
+            { pairs: 15, time: 45 },
+            { pairs: 20, time: 45 },
+            { pairs: 25, time: 45 },
+            { pairs: 30, time: 45 },
+            { pairs: 35, time: 45 },
+            { pairs: 40, time: 45 }
+        ];
+
+        let currentLevel = 1;
+        let score = 0;
+        let timeLeft = 45;
+        let timerId = null;
+        let selectedItems = [];
+        let matchedPairs = 0;
+
+        function showInstructions() {
             const config = levelConfig[currentLevel - 1];
-            document.getElementById('instructions').textContent = 
-                `Level ${currentLevel}: Find ${config.pairs} pairs in 45 seconds!`;
-            
-            const pairs = emojis.slice(0, config.pairs);
-            const items = [...pairs, ...pairs];
-            const gameContainer = document.getElementById('gameContainer');
-            gameContainer.innerHTML = '';
-
-            items.forEach((item, index) => {
-                const element = document.createElement('div');
-                element.className = 'game-item';
-                element.textContent = item;
-                
-                // Random positioning within container bounds
-                const maxX = gameContainer.offsetWidth - 60;
-                const maxY = gameContainer.offsetHeight - 60;
-                element.style.left = Math.random() * maxX + 'px';
-                element.style.top = Math.random() * maxY + 'px';
-                
-                element.addEventListener('click', handleItemClick);
-                gameContainer.appendChild(element);
-            });
-
-            startTimer();
+            document.getElementById('instructions').textContent =
+                `Level ${currentLevel}: Find all ${config.pairs} pairs of matching emojis. Tap two matching emojis to remove them. You have 45 seconds. Good luck!`;
         }
 
-        // Modified click handler
+        function randomPosition(existing, width, height) {
+            // Try to avoid overlap
+            let maxTries = 100;
+            while (maxTries--) {
+                let x = Math.random() * (width - 60);
+                let y = Math.random() * (height - 60);
+                let overlap = existing.some(pos => {
+                    let dx = pos.x - x;
+                    let dy = pos.y - y;
+                    return Math.abs(dx) < 60 && Math.abs(dy) < 60;
+                });
+                if (!overlap) return {x, y};
+            }
+            // Fallback: just return random
+            return {
+                x: Math.random() * (width - 60),
+                y: Math.random() * (height - 60)
+            };
+        }
+
+        function initGame() {
+            clearInterval(timerId);
+            selectedItems = [];
+            matchedPairs = 0;
+            const config = levelConfig[currentLevel - 1];
+            document.getElementById('level').textContent = currentLevel;
+            document.getElementById('score').textContent = score;
+            document.getElementById('progressFill').style.width = '0%';
+            showInstructions();
+
+            // Set up items
+            const pairs = emojis.slice(0, config.pairs);
+            const items = [...pairs, ...pairs];
+            // Shuffle
+            for (let i = items.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [items[i], items[j]] = [items[j], items[i]];
+            }
+
+            // Place items randomly in the container
+            const container = document.getElementById('gameContainer');
+            container.innerHTML = '';
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            let positions = [];
+            items.forEach((emoji, idx) => {
+                const div = document.createElement('div');
+                div.className = 'game-item';
+                div.textContent = emoji;
+                // Find a position that doesn't overlap
+                const pos = randomPosition(positions, width, height);
+                positions.push(pos);
+                div.style.left = pos.x + 'px';
+                div.style.top = pos.y + 'px';
+                div.addEventListener('click', handleItemClick);
+                container.appendChild(div);
+            });
+
+            // Timer
+            timeLeft = config.time;
+            document.getElementById('timer').textContent = timeLeft;
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    setTimeout(() => {
+                        alert("Time's up! Game Over!");
+                        location.reload();
+                    }, 100);
+                }
+            }, 1000);
+        }
+
         function handleItemClick(e) {
-            if (selectedItems.length >= 2 || e.target.hidden) return;
-            
-            e.target.style.background = '#3498db';
-            selectedItems.push(e.target);
+            const item = e.target;
+            if (item.classList.contains('matched') || item.classList.contains('selected')) return;
+            if (selectedItems.length === 2) return;
+
+            item.classList.add('selected');
+            selectedItems.push(item);
 
             if (selectedItems.length === 2) {
-                if (selectedItems[0].textContent === selectedItems[1].textContent) {
-                    score += 100;
-                    document.getElementById('score').textContent = score;
-                    selectedItems.forEach(item => {
-                        item.style.transform = 'scale(0)';
-                        setTimeout(() => item.hidden = true, 200);
-                    });
-                    updateProgress();
-                    checkLevelCompletion();
-                } else {
+                const [a, b] = selectedItems;
+                if (a.textContent === b.textContent) {
+                    // Match!
                     setTimeout(() => {
-                        selectedItems.forEach(item => item.style.background = '#ecf0f1');
-                    }, 500);
+                        a.classList.remove('selected');
+                        b.classList.remove('selected');
+                        a.classList.add('matched');
+                        b.classList.add('matched');
+                        matchedPairs++;
+                        score += 100;
+                        document.getElementById('score').textContent = score;
+                        updateProgress();
+                        checkLevelCompletion();
+                        selectedItems = [];
+                    }, 350);
+                } else {
+                    // Not a match
+                    setTimeout(() => {
+                        a.classList.remove('selected');
+                        b.classList.remove('selected');
+                        selectedItems = [];
+                    }, 650);
                 }
-                selectedItems = [];
             }
         }
 
-        // Keep other functions unchanged
+        function updateProgress() {
+            const totalPairs = levelConfig[currentLevel - 1].pairs;
+            const percent = (matchedPairs / totalPairs) * 100;
+            document.getElementById('progressFill').style.width = percent + '%';
+        }
+
+        function checkLevelCompletion() {
+            const totalPairs = levelConfig[currentLevel - 1].pairs;
+            if (matchedPairs === totalPairs) {
+                clearInterval(timerId);
+                setTimeout(() => {
+                    if (currentLevel === levelConfig.length) {
+                        alert('Congratulations! You completed all levels!');
+                        location.reload();
+                    } else {
+                        currentLevel++;
+                        initGame();
+                    }
+                }, 700);
+            }
+        }
+
+        // Responsive: reinitialize on window resize to reposition items
+        window.addEventListener('resize', () => {
+            setTimeout(initGame, 250);
+        });
+
+        // Start game
+        window.onload = () => {
+            initGame();
+        };
     </script>
 </body>
 </html>
