@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rock Paper Scissors Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: #f3f4f6;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      margin-top: 40px;
+      color: #22223b;
+    }
+    .game-area {
+      background: #fff;
+      padding: 32px 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(34,34,59,0.07);
+      margin-top: 24px;
+      min-width: 320px;
+      text-align: center;
+    }
+    .choices {
+      margin: 24px 0;
+    }
+    .choice-btn {
+      background: #4f8ef7;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 16px 24px;
+      margin: 0 12px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .choice-btn:hover {
+      background: #3456b0;
+    }
+    .result {
+      font-size: 1.2em;
+      margin: 18px 0 10px 0;
+      min-height: 28px;
+      color: #22223b;
+    }
+    .ascii {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.95em;
+      white-space: pre;
+      color: #22223b;
+      margin-bottom: 6px;
+    }
+    .scoreboard {
+      margin-top: 16px;
+      font-size: 1.1em;
+      color: #4f8ef7;
+    }
+    .footer {
+      margin-top: 50px;
+      color: #888;
+      font-size: 0.98em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rock Paper Scissors 🪨📄✂️</h1>
+  <div class="game-area">
+    <div class="choices">
+      <button class="choice-btn" data-choice="rock">🪨 Rock</button>
+      <button class="choice-btn" data-choice="paper">📄 Paper</button>
+      <button class="choice-btn" data-choice="scissors">✂️ Scissors</button>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="ascii" id="ascii"></div>
+    <div class="ascii" id="ascii-comp"></div>
+    <div class="scoreboard" id="scoreboard">Wins: 0 | Losses: 0 | Ties: 0</div>
+  </div>
+  <div class="footer">
+    © 2025 Rock Paper Scissors Game | No sound, pure HTML/JS.
+  </div>
+  <script>
+    const asciiArt = {
+      rock: `    _______
+---'   ____)
+      (_____)
+      (_____)
+      (____)
+---.__(___)`,
+      paper: `     _______
+---'    ____)____
+           ______)
+          _______)
+         _______)
+---.__________)`,
+      scissors: `    _______
+---'   ____)____
+          ______)
+       __________)
+      (____)
+---.__(___)`
+    };
+
+    const choices = ["rock", "paper", "scissors"];
+    let wins = 0, losses = 0, ties = 0;
+
+    document.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const userChoice = btn.getAttribute('data-choice');
+        const compChoice = choices[Math.floor(Math.random() * 3)];
+        let result = "";
+
+        // Determine winner
+        if (userChoice === compChoice) {
+          result = "It's a tie! 🤝";
+          ties++;
+        } else if (
+          (userChoice === "rock" && compChoice === "scissors") ||
+          (userChoice === "paper" && compChoice === "rock") ||
+          (userChoice === "scissors" && compChoice === "paper")
+        ) {
+          result = "You win! 🎉";
+          wins++;
+        } else {
+          result = "Computer wins! 💻";
+          losses++;
+        }
+
+        // Display result and ASCII art
+        document.getElementById('result').textContent = `You chose ${userChoice}. Computer chose ${compChoice}. ${result}`;
+        document.getElementById('ascii').textContent = asciiArt[userChoice];
+        document.getElementById('ascii-comp').textContent = asciiArt[compChoice];
+        document.getElementById('scoreboard').textContent = `Wins: ${wins} | Losses: ${losses} | Ties: ${ties}`;
+      });
+    });
+  </script>
+</body>
+</html>
