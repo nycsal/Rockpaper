@@ -3,270 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scatter Match Game</title>
+    <title>Simple HTML Driving Game</title>
     <style>
-        html, body {
+        body {
             margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100%;
-            background: #2c3e50;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-        #scoreboard {
             display: flex;
-            gap: 20px;
-            margin: 20px;
-            font-size: 1.2em;
-        }
-        #timer {
-            font-size: 1.5em;
-            color: #e74c3c;
-            margin: 10px 0;
-        }
-        #progressBar {
-            width: 300px;
-            height: 20px;
-            background: #2c3e50;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 20px auto;
-        }
-        #progressFill {
-            height: 100%;
-            background: #27ae60;
-            transition: width 0.3s;
-            width: 0%;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #333;
+            font-family: Arial, sans-serif;
         }
         #gameContainer {
             position: relative;
-            width: 90vw;
-            max-width: 1200px;
-            height: 60vh;
-            min-height: 400px;
-            margin: 0 auto;
-            background: #34495e;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
         }
-        .game-item {
+        #gameCanvas {
+            border: 2px solid white;
+            background-color: #000;
+        }
+        #scoreBoard {
             position: absolute;
-            width: 50px;
-            height: 50px;
-            background: #ecf0f1;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            transition: transform 0.25s, opacity 0.25s, background 0.25s;
-            user-select: none;
+            top: 10px;
+            left: 10px;
+            color: yellow;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px black;
         }
-        .game-item.selected {
-            background: #3498db;
-        }
-        .game-item.matched {
-            transform: scale(0);
-            opacity: 0;
-            pointer-events: none;
-        }
-        .instructions {
-            background: #34495e;
-            padding: 16px 24px;
-            border-radius: 10px;
-            margin: 20px auto;
-            text-align: center;
-            max-width: 700px;
-            font-size: 1.1em;
+        #speedBoard {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            color: cyan;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px black;
         }
     </style>
 </head>
 <body>
-    <div id="scoreboard">
-        <div>Level: <span id="level">1</span></div>
-        <div>Score: <span id="score">0</span></div>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="scoreBoard">Score: 0</div>
+        <div id="speedBoard">Speed: 0 mph</div>
     </div>
-    <div id="timer">45</div>
-    <div id="progressBar"><div id="progressFill"></div></div>
-    <div id="gameContainer"></div>
-    <div id="instructions" class="instructions"></div>
 
     <script>
-        // Emoji pool for pairs (expand as needed)
-        const emojis = [
-            '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯',
-            '🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦄',
-            '🐙','🦋','🐞','🐢','🐍','🦖','🦕','🦀','🐡','🐬',
-            '🐳','🦈','🦓','🦒','🦘','🦥','🦦','🦨','🦩','🦚',
-            '🦜','🦢','🦩','🦔','🐲','🐉','🐋','🦭','🦧','🦮'
-        ];
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreBoard = document.getElementById('scoreBoard');
+        const speedBoard = document.getElementById('speedBoard');
 
-        const levelConfig = [
-            { pairs: 10, time: 45 },
-            { pairs: 15, time: 45 },
-            { pairs: 20, time: 45 },
-            { pairs: 25, time: 45 },
-            { pairs: 30, time: 45 },
-            { pairs: 35, time: 45 },
-            { pairs: 40, time: 45 }
-        ];
-
-        let currentLevel = 1;
+        // Game variables
         let score = 0;
-        let timeLeft = 45;
-        let timerId = null;
-        let selectedItems = [];
-        let matchedPairs = 0;
+        let speed = 0;
+        const maxSpeed = 100;
+        const carWidth = 40;
+        const carHeight = 60;
+        let carX = canvas.width / 2 - carWidth / 2;
+        let carY = canvas.height - carHeight - 20;
+        let roadOffset = 0;
+        let gameOver = false;
 
-        function showInstructions() {
-            const config = levelConfig[currentLevel - 1];
-            document.getElementById('instructions').textContent =
-                `Level ${currentLevel}: Find all ${config.pairs} pairs of matching emojis. Tap two matching emojis to remove them. You have 45 seconds. Good luck!`;
-        }
+        // Car object
+        const car = {
+            x: carX,
+            y: carY,
+            width: carWidth,
+            height: carHeight,
+            speed: 5
+        };
 
-        function randomPosition(existing, width, height) {
-            // Try to avoid overlap
-            let maxTries = 100;
-            while (maxTries--) {
-                let x = Math.random() * (width - 60);
-                let y = Math.random() * (height - 60);
-                let overlap = existing.some(pos => {
-                    let dx = pos.x - x;
-                    let dy = pos.y - y;
-                    return Math.abs(dx) < 60 && Math.abs(dy) < 60;
-                });
-                if (!overlap) return {x, y};
-            }
-            // Fallback: just return random
-            return {
-                x: Math.random() * (width - 60),
-                y: Math.random() * (height - 60)
-            };
-        }
-
-        function initGame() {
-            clearInterval(timerId);
-            selectedItems = [];
-            matchedPairs = 0;
-            const config = levelConfig[currentLevel - 1];
-            document.getElementById('level').textContent = currentLevel;
-            document.getElementById('score').textContent = score;
-            document.getElementById('progressFill').style.width = '0%';
-            showInstructions();
-
-            // Set up items
-            const pairs = emojis.slice(0, config.pairs);
-            const items = [...pairs, ...pairs];
-            // Shuffle
-            for (let i = items.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [items[i], items[j]] = [items[j], items[i]];
-            }
-
-            // Place items randomly in the container
-            const container = document.getElementById('gameContainer');
-            container.innerHTML = '';
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
-            let positions = [];
-            items.forEach((emoji, idx) => {
-                const div = document.createElement('div');
-                div.className = 'game-item';
-                div.textContent = emoji;
-                // Find a position that doesn't overlap
-                const pos = randomPosition(positions, width, height);
-                positions.push(pos);
-                div.style.left = pos.x + 'px';
-                div.style.top = pos.y + 'px';
-                div.addEventListener('click', handleItemClick);
-                container.appendChild(div);
-            });
-
-            // Timer
-            timeLeft = config.time;
-            document.getElementById('timer').textContent = timeLeft;
-            timerId = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer').textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    setTimeout(() => {
-                        alert("Time's up! Game Over!");
-                        location.reload();
-                    }, 100);
-                }
-            }, 1000);
-        }
-
-        function handleItemClick(e) {
-            const item = e.target;
-            if (item.classList.contains('matched') || item.classList.contains('selected')) return;
-            if (selectedItems.length === 2) return;
-
-            item.classList.add('selected');
-            selectedItems.push(item);
-
-            if (selectedItems.length === 2) {
-                const [a, b] = selectedItems;
-                if (a.textContent === b.textContent) {
-                    // Match!
-                    setTimeout(() => {
-                        a.classList.remove('selected');
-                        b.classList.remove('selected');
-                        a.classList.add('matched');
-                        b.classList.add('matched');
-                        matchedPairs++;
-                        score += 100;
-                        document.getElementById('score').textContent = score;
-                        updateProgress();
-                        checkLevelCompletion();
-                        selectedItems = [];
-                    }, 350);
-                } else {
-                    // Not a match
-                    setTimeout(() => {
-                        a.classList.remove('selected');
-                        b.classList.remove('selected');
-                        selectedItems = [];
-                    }, 650);
-                }
-            }
-        }
-
-        function updateProgress() {
-            const totalPairs = levelConfig[currentLevel - 1].pairs;
-            const percent = (matchedPairs / totalPairs) * 100;
-            document.getElementById('progressFill').style.width = percent + '%';
-        }
-
-        function checkLevelCompletion() {
-            const totalPairs = levelConfig[currentLevel - 1].pairs;
-            if (matchedPairs === totalPairs) {
-                clearInterval(timerId);
-                setTimeout(() => {
-                    if (currentLevel === levelConfig.length) {
-                        alert('Congratulations! You completed all levels!');
-                        location.reload();
-                    } else {
-                        currentLevel++;
-                        initGame();
-                    }
-                }, 700);
-            }
-        }
-
-        // Responsive: reinitialize on window resize to reposition items
-        window.addEventListener('resize', () => {
-            setTimeout(initGame, 250);
+        // Keyboard controls
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
         });
 
-        // Start game
-        window.onload = () => {
-            initGame();
-        };
+        // Draw the car
+        function drawCar() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(car.x, car.y, car.width, car.height);
+            // Wheels
+            ctx.fillStyle = 'black';
+            ctx.fillRect(car.x + 5, car.y, 5, 10); // Left front wheel
+            ctx.fillRect(car.x + car.width - 10, car.y, 5, 10); // Right front wheel
+            ctx.fillRect(car.x + 5, car.y + car.height - 10, 5, 10); // Left rear wheel
+            ctx.fillRect(car.x + car.width - 10, car.y + car.height - 10, 5, 10); // Right rear wheel
+        }
+
+        // Draw the road
+        function drawRoad() {
+            ctx.fillStyle = 'gray';
+            ctx.fillRect(150, 0, 500, canvas.height); // Road
+            ctx.fillStyle = 'white';
+            for (let i = 0; i < canvas.height; i += 40) {
+                ctx.fillRect(395, i + roadOffset, 10, 20); // Center dashed line
+            }
+            roadOffset = (roadOffset + speed / 10) % 40; // Animate road movement
+        }
+
+        // Update game state
+        function update() {
+            if (gameOver) return;
+
+            // Car movement
+            if (keys['ArrowLeft'] && car.x > 150) {
+                car.x -= car.speed;
+            }
+            if (keys['ArrowRight'] && car.x < 650 - car.width) {
+                car.x += car.speed;
+            }
+            if (keys['ArrowUp']) {
+                speed = Math.min(speed + 1, maxSpeed);
+            }
+            if (keys['ArrowDown']) {
+                speed = Math.max(speed - 1, 0);
+            }
+
+            // Update score based on speed
+            score += Math.floor(speed / 10);
+
+            // Update displays
+            scoreBoard.textContent = `Score: ${score}`;
+            speedBoard.textContent = `Speed: ${Math.floor(speed)} mph`;
+        }
+
+        // Draw everything
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.fillStyle = 'green';
+            ctx.fillRect(0, 0, 150, canvas.height); // Left grass
+            ctx.fillRect(650, 0, 150, canvas.height); // Right grass
+
+            // Draw road and car
+            drawRoad();
+            drawCar();
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        gameLoop();
     </script>
 </body>
 </html>
