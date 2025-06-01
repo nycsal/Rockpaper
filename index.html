@@ -3,179 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile HTML Driving Game</title>
+    <title>Maryam Pastries - Catch the Treats!</title>
     <style>
         body {
-            margin: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #f7e6f0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #333;
-            font-family: Arial, sans-serif;
-            touch-action: manipulation; /* Prevent default touch actions */
-        }
-        #gameContainer {
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
             position: relative;
-            width: 100%;
+        }
+
+        #game-container {
+            width: 80%;
             max-width: 800px;
             height: 600px;
+            background-color: #ffffff;
+            border: 10px solid #ff99cc;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-header {
+            width: 100%;
+            background-color: #ffcced;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 2.5em;
+            color: #8c004b;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            border-bottom: 5px solid #ff99cc;
+            box-sizing: border-box;
+        }
+
+        #game-area {
+            flex-grow: 1;
+            width: 100%;
+            position: relative;
             overflow: hidden;
         }
-        #gameCanvas {
+
+        #player {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 80px;
+            background-image: url('https://via.placeholder.com/100x80/ffe0f0/8c004b?text=Basket'); /* Placeholder for a basket image */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 10;
+            border-radius: 10px;
+        }
+
+        .falling-item {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            animation: fall linear forwards;
+            z-index: 5;
+        }
+
+        .muffin {
+            background-image: url('https://via.placeholder.com/50x50/a0d9e0/336699?text=Muffin'); /* Placeholder for a muffin image */
+        }
+
+        .cake {
+            background-image: url('https://via.placeholder.com/50x50/ffb3e6/cc0066?text=Cake'); /* Placeholder for a cake slice image */
+        }
+
+        @keyframes fall {
+            from { top: -50px; }
+            to { top: calc(100% + 50px); }
+        }
+
+        #scoreboard {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            color: #8c004b;
+            font-weight: bold;
+            border: 2px solid #ff99cc;
+            z-index: 20;
+        }
+
+        #level-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            color: #8c004b;
+            font-weight: bold;
+            border: 2px solid #ff99cc;
+            z-index: 20;
+        }
+
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            border: 2px solid white;
-            background-color: #000;
-            display: block;
-        }
-        #scoreBoard {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: yellow;
-            font-size: 20px;
-            text-shadow: 1px 1px 2px black;
-        }
-        #speedBoard {
-            position: absolute;
-            top: 40px;
-            left: 10px;
-            color: cyan;
-            font-size: 20px;
-            text-shadow: 1px 1px 2px black;
-        }
-        #controlLeft, #controlRight, #controlUp, #controlDown {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            border-radius: 50%;
+            background-color: rgba(255, 204, 237, 0.9);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            color: white;
-            font-size: 18px;
-            user-select: none;
+            align-items: center;
+            z-index: 100;
+            color: #8c004b;
+            text-align: center;
+            font-weight: bold;
         }
-        #controlLeft { bottom: 20px; left: 20px; }
-        #controlRight { bottom: 20px; right: 20px; }
-        #controlUp { bottom: 110px; left: 50%; transform: translateX(-50%); }
-        #controlDown { bottom: 20px; left: 50%; transform: translateX(-50%); }
+
+        #start-screen h1, #game-over-screen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #start-screen button, #game-over-screen button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: #ff66b2;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #start-screen button:hover, #game-over-screen button:hover {
+            background-color: #e60073;
+        }
+
+        #game-over-screen p {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        /* Animations for caught/missed items */
+        .caught-animation {
+            animation: fadeOutUp 0.5s forwards;
+        }
+
+        .missed-animation {
+            animation: fadeOutDown 0.5s forwards;
+        }
+
+        @keyframes fadeOutUp {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-50px); }
+        }
+
+        @keyframes fadeOutDown {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(50px); }
+        }
+
+        /* Background elements for branding */
+        .background-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-image: repeating-linear-gradient(45deg, #ffeff7 0, #ffeff7 10px, transparent 10px, transparent 20px);
+            opacity: 0.3;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
-        <div id="scoreBoard">Score: 0</div>
-        <div id="speedBoard">Speed: 0 mph</div>
-        <div id="controlLeft">Left</div>
-        <div id="controlRight">Right</div>
-        <div id="controlUp">Up</div>
-        <div id="controlDown">Down</div>
+    <div id="game-container">
+        <div class="background-pattern"></div>
+        <div id="game-header">Maryam Pastries</div>
+        <div id="game-area">
+            <div id="player"></div>
+            <div id="scoreboard">Score: <span id="score">0</span></div>
+            <div id="level-info">Misses: <span id="misses">0</span> / 5 | Level: <span id="level">1</span></div>
+        </div>
+
+        <div id="start-screen">
+            <h1>Maryam Pastries</h1>
+            <p>Catch the delicious muffins and cakes!</p>
+            <button id="start-button">Start Game</button>
+        </div>
+
+        <div id="game-over-screen" style="display:none;">
+            <h1>Game Over!</h1>
+            <p id="final-score"></p>
+            <p id="level-reached"></p>
+            <button id="restart-button">Play Again</button>
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreBoard = document.getElementById('scoreBoard');
-        const speedBoard = document.getElementById('speedBoard');
-        const controlLeft = document.getElementById('controlLeft');
-        const controlRight = document.getElementById('controlRight');
-        const controlUp = document.getElementById('controlUp');
-        const controlDown = document.getElementById('controlDown');
+        const player = document.getElementById('player');
+        const gameArea = document.getElementById('game-area');
+        const scoreDisplay = document.getElementById('score');
+        const missesDisplay = document.getElementById('misses');
+        const levelDisplay = document.getElementById('level');
+        const startScreen = document.getElementById('start-screen');
+        const startButton = document.getElementById('start-button');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const levelReachedDisplay = document.getElementById('level-reached');
+        const restartButton = document.getElementById('restart-button');
 
-        // Game variables
         let score = 0;
-        let speed = 0;
-        const maxSpeed = 100;
-        const carWidth = 40;
-        const carHeight = 60;
-        let carX = canvas.width / 2 - carWidth / 2;
-        let carY = canvas.height - carHeight - 20;
-        let roadOffset = 0;
-        let gameOver = false;
+        let misses = 0;
+        let level = 1;
+        let playerX = 50; // Percentage for player position
+        let fallingItems = [];
+        let gameInterval;
+        let itemDropInterval;
+        let gameRunning = false;
 
-        // Car object
-        const car = {
-            x: carX,
-            y: carY,
-            width: carWidth,
-            height: carHeight,
-            speed: 5
-        };
+        const ITEM_TYPES = ['muffin', 'cake'];
+        const PLAYER_SPEED = 10; // Pixels per move
+        const MAX_MISSES = 5;
+        const ITEMS_PER_LEVEL = 10; // Number of items to catch to level up
 
-        // Touch controls
-        let touchLeft = false;
-        let touchRight = false;
-        let touchUp = false;
-        let touchDown = false;
+        // Game state and difficulty
+        let baseFallSpeed = 3; // pixels per frame
+        let dropFrequency = 1500; // milliseconds
 
-        controlLeft.addEventListener('touchstart', () => touchLeft = true);
-        controlLeft.addEventListener('touchend', () => touchLeft = false);
-        controlRight.addEventListener('touchstart', () => touchRight = true);
-        controlRight.addEventListener('touchend', () => touchRight = false);
-        controlUp.addEventListener('touchstart', () => touchUp = true);
-        controlUp.addEventListener('touchend', () => touchUp = false);
-        controlDown.addEventListener('touchstart', () => touchDown = true);
-        controlDown.addEventListener('touchend', () => touchDown = false);
-
-        // Draw the car
-        function drawCar() {
-            ctx.fillStyle = 'red';
-            ctx.fillRect(car.x, car.y, car.width, car.height);
-            ctx.fillStyle = 'black';
-            ctx.fillRect(car.x + 5, car.y, 5, 10);
-            ctx.fillRect(car.x + car.width - 10, car.y, 5, 10);
-            ctx.fillRect(car.x + 5, car.y + car.height - 10, 5, 10);
-            ctx.fillRect(car.x + car.width - 10, car.y + car.height - 10, 5, 10);
+        function updatePlayerPosition() {
+            player.style.left = `${playerX}%`;
         }
 
-        // Draw the road
-        function drawRoad() {
-            ctx.fillStyle = 'gray';
-            ctx.fillRect(150, 0, 500, canvas.height);
-            ctx.fillStyle = 'white';
-            for (let i = 0; i < canvas.height; i += 40) {
-                ctx.fillRect(395, i + roadOffset, 10, 20);
+        function createFallingItem() {
+            if (!gameRunning) return;
+
+            const itemType = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
+            const item = document.createElement('div');
+            item.classList.add('falling-item', itemType);
+            item.style.left = `${Math.random() * (gameArea.offsetWidth - 50)}px`; // Random X position
+            gameArea.appendChild(item);
+            fallingItems.push(item);
+
+            let currentFallSpeed = baseFallSpeed + (level - 1) * 0.5; // Speed increases with level
+            let itemFallInterval = setInterval(() => {
+                let top = parseInt(item.style.top) || 0;
+                item.style.top = `${top + currentFallSpeed}px`;
+
+                // Check for collision with player
+                if (
+                    top + item.offsetHeight >= player.offsetTop &&
+                    top <= player.offsetTop + player.offsetHeight &&
+                    parseInt(item.style.left) + item.offsetWidth >= player.offsetLeft &&
+                    parseInt(item.style.left) <= player.offsetLeft + player.offsetWidth
+                ) {
+                    // Hit!
+                    score++;
+                    scoreDisplay.textContent = score;
+                    item.classList.add('caught-animation');
+                    item.addEventListener('animationend', () => item.remove());
+                    clearInterval(itemFallInterval);
+                    fallingItems = fallingItems.filter(i => i !== item);
+                    checkLevelUp();
+                }
+
+                // Check if item went off-screen
+                if (top > gameArea.offsetHeight) {
+                    misses++;
+                    missesDisplay.textContent = misses;
+                    item.classList.add('missed-animation');
+                    item.addEventListener('animationend', () => item.remove());
+                    clearInterval(itemFallInterval);
+                    fallingItems = fallingItems.filter(i => i !== item);
+                    checkGameOver();
+                }
+            }, 20); // Update every 20ms
+        }
+
+        function checkLevelUp() {
+            if (score >= level * ITEMS_PER_LEVEL) {
+                level++;
+                levelDisplay.textContent = level;
+                // Increase difficulty
+                dropFrequency = Math.max(500, dropFrequency - 100); // Faster drops, with a minimum
+                clearInterval(itemDropInterval);
+                itemDropInterval = setInterval(createFallingItem, dropFrequency);
             }
-            roadOffset = (roadOffset + speed / 10) % 40;
         }
 
-        // Update game state
-        function update() {
-            if (gameOver) return;
-
-            if (touchLeft && car.x > 150) car.x -= car.speed;
-            if (touchRight && car.x < 650 - car.width) car.x += car.speed;
-            if (touchUp) speed = Math.min(speed + 1, maxSpeed);
-            if (touchDown) speed = Math.max(speed - 1, 0);
-
-            score += Math.floor(speed / 10);
-            scoreBoard.textContent = `Score: ${score}`;
-            speedBoard.textContent = `Speed: ${Math.floor(speed)} mph`;
+        function checkGameOver() {
+            if (misses >= MAX_MISSES) {
+                endGame();
+            }
         }
 
-        // Draw everything
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'green';
-            ctx.fillRect(0, 0, 150, canvas.height);
-            ctx.fillRect(650, 0, 150, canvas.height);
-            drawRoad();
-            drawCar();
+        function startGame() {
+            score = 0;
+            misses = 0;
+            level = 1;
+            playerX = 50;
+            baseFallSpeed = 3;
+            dropFrequency = 1500;
+            fallingItems.forEach(item => item.remove());
+            fallingItems = [];
+            scoreDisplay.textContent = score;
+            missesDisplay.textContent = misses;
+            levelDisplay.textContent = level;
+            player.style.left = '50%';
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            gameRunning = true;
+
+            itemDropInterval = setInterval(createFallingItem, dropFrequency);
         }
 
-        // Game loop
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
+        function endGame() {
+            gameRunning = false;
+            clearInterval(itemDropInterval);
+            fallingItems.forEach(item => item.remove()); // Remove all remaining falling items
+            finalScoreDisplay.textContent = `Score: ${score}`;
+            levelReachedDisplay.textContent = `Level Reached: ${level}`;
+            gameOverScreen.style.display = 'flex';
         }
 
-        // Start the game
-        gameLoop();
+        // Player movement
+        document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
+
+            const playerWidth = player.offsetWidth;
+            const gameAreaWidth = gameArea.offsetWidth;
+            const playerLeftPx = playerX / 100 * gameAreaWidth;
+
+            if (e.key === 'ArrowLeft') {
+                playerX = Math.max(0, playerX - (PLAYER_SPEED / gameAreaWidth) * 100);
+            } else if (e.key === 'ArrowRight') {
+                playerX = Math.min(100 - (playerWidth / gameAreaWidth) * 100, playerX + (PLAYER_SPEED / gameAreaWidth) * 100);
+            }
+            updatePlayerPosition();
+        });
+
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        // Initialize player position
+        updatePlayerPosition();
     </script>
 </body>
 </html>
