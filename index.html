@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple HTML Driving Game</title>
+    <title>Mobile HTML Driving Game</title>
     <style>
         body {
             margin: 0;
@@ -13,13 +13,21 @@
             height: 100vh;
             background-color: #333;
             font-family: Arial, sans-serif;
+            touch-action: manipulation; /* Prevent default touch actions */
         }
         #gameContainer {
             position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            overflow: hidden;
         }
         #gameCanvas {
+            width: 100%;
+            height: 100%;
             border: 2px solid white;
             background-color: #000;
+            display: block;
         }
         #scoreBoard {
             position: absolute;
@@ -37,13 +45,35 @@
             font-size: 20px;
             text-shadow: 1px 1px 2px black;
         }
+        #controlLeft, #controlRight, #controlUp, #controlDown {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            user-select: none;
+        }
+        #controlLeft { bottom: 20px; left: 20px; }
+        #controlRight { bottom: 20px; right: 20px; }
+        #controlUp { bottom: 110px; left: 50%; transform: translateX(-50%); }
+        #controlDown { bottom: 20px; left: 50%; transform: translateX(-50%); }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas"></canvas>
         <div id="scoreBoard">Score: 0</div>
         <div id="speedBoard">Speed: 0 mph</div>
+        <div id="controlLeft">Left</div>
+        <div id="controlRight">Right</div>
+        <div id="controlUp">Up</div>
+        <div id="controlDown">Down</div>
     </div>
 
     <script>
@@ -51,6 +81,10 @@
         const ctx = canvas.getContext('2d');
         const scoreBoard = document.getElementById('scoreBoard');
         const speedBoard = document.getElementById('speedBoard');
+        const controlLeft = document.getElementById('controlLeft');
+        const controlRight = document.getElementById('controlRight');
+        const controlUp = document.getElementById('controlUp');
+        const controlDown = document.getElementById('controlDown');
 
         // Game variables
         let score = 0;
@@ -72,60 +106,53 @@
             speed: 5
         };
 
-        // Keyboard controls
-        const keys = {};
-        window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-        });
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
+        // Touch controls
+        let touchLeft = false;
+        let touchRight = false;
+        let touchUp = false;
+        let touchDown = false;
+
+        controlLeft.addEventListener('touchstart', () => touchLeft = true);
+        controlLeft.addEventListener('touchend', () => touchLeft = false);
+        controlRight.addEventListener('touchstart', () => touchRight = true);
+        controlRight.addEventListener('touchend', () => touchRight = false);
+        controlUp.addEventListener('touchstart', () => touchUp = true);
+        controlUp.addEventListener('touchend', () => touchUp = false);
+        controlDown.addEventListener('touchstart', () => touchDown = true);
+        controlDown.addEventListener('touchend', () => touchDown = false);
 
         // Draw the car
         function drawCar() {
             ctx.fillStyle = 'red';
             ctx.fillRect(car.x, car.y, car.width, car.height);
-            // Wheels
             ctx.fillStyle = 'black';
-            ctx.fillRect(car.x + 5, car.y, 5, 10); // Left front wheel
-            ctx.fillRect(car.x + car.width - 10, car.y, 5, 10); // Right front wheel
-            ctx.fillRect(car.x + 5, car.y + car.height - 10, 5, 10); // Left rear wheel
-            ctx.fillRect(car.x + car.width - 10, car.y + car.height - 10, 5, 10); // Right rear wheel
+            ctx.fillRect(car.x + 5, car.y, 5, 10);
+            ctx.fillRect(car.x + car.width - 10, car.y, 5, 10);
+            ctx.fillRect(car.x + 5, car.y + car.height - 10, 5, 10);
+            ctx.fillRect(car.x + car.width - 10, car.y + car.height - 10, 5, 10);
         }
 
         // Draw the road
         function drawRoad() {
             ctx.fillStyle = 'gray';
-            ctx.fillRect(150, 0, 500, canvas.height); // Road
+            ctx.fillRect(150, 0, 500, canvas.height);
             ctx.fillStyle = 'white';
             for (let i = 0; i < canvas.height; i += 40) {
-                ctx.fillRect(395, i + roadOffset, 10, 20); // Center dashed line
+                ctx.fillRect(395, i + roadOffset, 10, 20);
             }
-            roadOffset = (roadOffset + speed / 10) % 40; // Animate road movement
+            roadOffset = (roadOffset + speed / 10) % 40;
         }
 
         // Update game state
         function update() {
             if (gameOver) return;
 
-            // Car movement
-            if (keys['ArrowLeft'] && car.x > 150) {
-                car.x -= car.speed;
-            }
-            if (keys['ArrowRight'] && car.x < 650 - car.width) {
-                car.x += car.speed;
-            }
-            if (keys['ArrowUp']) {
-                speed = Math.min(speed + 1, maxSpeed);
-            }
-            if (keys['ArrowDown']) {
-                speed = Math.max(speed - 1, 0);
-            }
+            if (touchLeft && car.x > 150) car.x -= car.speed;
+            if (touchRight && car.x < 650 - car.width) car.x += car.speed;
+            if (touchUp) speed = Math.min(speed + 1, maxSpeed);
+            if (touchDown) speed = Math.max(speed - 1, 0);
 
-            // Update score based on speed
             score += Math.floor(speed / 10);
-
-            // Update displays
             scoreBoard.textContent = `Score: ${score}`;
             speedBoard.textContent = `Speed: ${Math.floor(speed)} mph`;
         }
@@ -133,13 +160,9 @@
         // Draw everything
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw background
             ctx.fillStyle = 'green';
-            ctx.fillRect(0, 0, 150, canvas.height); // Left grass
-            ctx.fillRect(650, 0, 150, canvas.height); // Right grass
-
-            // Draw road and car
+            ctx.fillRect(0, 0, 150, canvas.height);
+            ctx.fillRect(650, 0, 150, canvas.height);
             drawRoad();
             drawCar();
         }
