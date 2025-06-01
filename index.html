@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maryam Pastries - Catch the Treats!</title>
+    <title>Maryam's Pastries: Sweet Shooter</title>
     <style>
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background-color: #f7e6f0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8d7ba; /* Light pastry background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,10 +21,10 @@
             width: 80%;
             max-width: 800px;
             height: 600px;
-            background-color: #ffffff;
-            border: 10px solid #ff99cc;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            background-color: #fff;
+            border: 10px solid #e6b380;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -32,16 +32,15 @@
             align-items: center;
         }
 
-        #game-header {
-            width: 100%;
-            background-color: #ffcced;
-            padding: 15px 0;
+        #header {
+            background-color: #d4ac0d; /* Golden header */
+            color: #fff;
+            padding: 20px 0;
             text-align: center;
-            font-size: 2.5em;
-            color: #8c004b;
+            font-size: 2em;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            border-bottom: 5px solid #ff99cc;
+            width: 100%;
+            border-bottom: 5px solid #b8860b;
             box-sizing: border-box;
         }
 
@@ -50,40 +49,67 @@
             width: 100%;
             position: relative;
             overflow: hidden;
+            background-image: url('https://via.placeholder.com/800x450/f0f0f0/ccc?Text=Pastry+Shop+Sky'); /* Placeholder sky */
+            background-size: cover;
         }
 
-        #player {
+        #chocolatier-container {
             position: absolute;
-            bottom: 20px;
+            bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 80px;
-            background-image: url('https://via.placeholder.com/100x80/ffe0f0/8c004b?text=Basket'); /* Placeholder for a basket image */
+            width: 150px;
+            height: 150px;
+            background-image: url('https://via.placeholder.com/150x150/8b4513/eee?Text=Chocolatier'); /* Placeholder chocolatier */
             background-size: contain;
             background-repeat: no-repeat;
-            background-position: center;
+            background-position: bottom center;
             z-index: 10;
-            border-radius: 10px;
         }
 
-        .falling-item {
+        #piping-bag {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            background-image: url('https://via.placeholder.com/40x60/fff/000?Text=Pipe'); /* Placeholder piping bag */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: bottom center;
+            transform-origin: bottom center;
+            z-index: 11;
+        }
+
+        .pastry {
             position: absolute;
             width: 50px;
             height: 50px;
             background-size: contain;
             background-repeat: no-repeat;
-            background-position: center;
             animation: fall linear forwards;
             z-index: 5;
         }
 
-        .muffin {
-            background-image: url('https://via.placeholder.com/50x50/a0d9e0/336699?text=Muffin'); /* Placeholder for a muffin image */
+        .muffin { background-image: url('https://via.placeholder.com/50x50/a0d9e0/336699?Text=Muffin'); }
+        .chocolate-cake { background-image: url('https://via.placeholder.com/50x50/8b4513/fff?Text=Cake'); }
+        .chocolate-praline { background-image: url('https://via.placeholder.com/50x50/d2691e/fff?Text=Praline'); border-radius: 50%; }
+        .croissant { background-image: url('https://via.placeholder.com/50x50/f4a460/fff?Text=Croissant'); }
+        .fruit-tart { background-image: url('https://via.placeholder.com/50x50/ffdab9/8b0000?Text=Tart'); border-radius: 10px; }
+
+        .glowing {
+            box-shadow: 0 0 10px 5px yellow;
+            border-radius: 5px; /* Apply glow within pastry bounds */
         }
 
-        .cake {
-            background-image: url('https://via.placeholder.com/50x50/ffb3e6/cc0066?text=Cake'); /* Placeholder for a cake slice image */
+        .shot {
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            background-color: white;
+            border-radius: 5px;
+            z-index: 9;
         }
 
         @keyframes fall {
@@ -91,32 +117,42 @@
             to { top: calc(100% + 50px); }
         }
 
-        #scoreboard {
+        #ui {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px 15px;
-            border-radius: 10px;
+            top: 10px;
+            left: 10px;
+            color: #333;
             font-size: 1.2em;
-            color: #8c004b;
             font-weight: bold;
-            border: 2px solid #ff99cc;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
             z-index: 20;
         }
 
-        #level-info {
+        #shop {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 1.2em;
-            color: #8c004b;
-            font-weight: bold;
-            border: 2px solid #ff99cc;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 8px;
             z-index: 20;
+        }
+
+        #shop button {
+            padding: 8px 15px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #d2b48c;
+            color: white;
+            font-weight: bold;
+        }
+
+        #shop button:hover {
+            background-color: #a0522d;
         }
 
         #start-screen, #game-over-screen {
@@ -125,27 +161,25 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 204, 237, 0.9);
+            background-color: rgba(248, 215, 170, 0.9);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 100;
-            color: #8c004b;
+            color: #8b4513;
             text-align: center;
-            font-weight: bold;
         }
 
         #start-screen h1, #game-over-screen h1 {
             font-size: 3em;
             margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         #start-screen button, #game-over-screen button {
             padding: 15px 30px;
             font-size: 1.5em;
-            background-color: #ff66b2;
+            background-color: #d4ac0d;
             color: white;
             border: none;
             border-radius: 10px;
@@ -154,217 +188,289 @@
         }
 
         #start-screen button:hover, #game-over-screen button:hover {
-            background-color: #e60073;
+            background-color: #b8860b;
         }
 
         #game-over-screen p {
             font-size: 1.8em;
-            margin-bottom: 20px;
-        }
-
-        /* Animations for caught/missed items */
-        .caught-animation {
-            animation: fadeOutUp 0.5s forwards;
-        }
-
-        .missed-animation {
-            animation: fadeOutDown 0.5s forwards;
-        }
-
-        @keyframes fadeOutUp {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-50px); }
-        }
-
-        @keyframes fadeOutDown {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(50px); }
-        }
-
-        /* Background elements for branding */
-        .background-pattern {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            background-image: repeating-linear-gradient(45deg, #ffeff7 0, #ffeff7 10px, transparent 10px, transparent 20px);
-            opacity: 0.3;
-            z-index: 1;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <div class="background-pattern"></div>
-        <div id="game-header">Maryam Pastries</div>
+        <div id="header">Maryam's Sweet Shooter</div>
         <div id="game-area">
-            <div id="player"></div>
-            <div id="scoreboard">Score: <span id="score">0</span></div>
-            <div id="level-info">Misses: <span id="misses">0</span> / 5 | Level: <span id="level">1</span></div>
+            <div id="ui">
+                <div>Score: <span id="score">0</span></div>
+                <div>Coins: <span id="coins">0</span></div>
+                <div>Level: <span id="level">1</span></div>
+            </div>
+            <div id="shop">
+                <div>Shop</div>
+                <button disabled>Upgrade Piping Bag (100 Coins)</button>
+                <button disabled>Buy Auto-Aim (250 Coins)</button>
+            </div>
+            <div id="chocolatier-container">
+                <div id="piping-bag"></div>
+            </div>
         </div>
 
         <div id="start-screen">
-            <h1>Maryam Pastries</h1>
-            <p>Catch the delicious muffins and cakes!</p>
+            <h1>Maryam's Sweet Shooter</h1>
+            <p>Use your piping bag to shoot the glowing pastries!</p>
             <button id="start-button">Start Game</button>
         </div>
 
         <div id="game-over-screen" style="display:none;">
             <h1>Game Over!</h1>
             <p id="final-score"></p>
-            <p id="level-reached"></p>
+            <p id="coins-earned"></p>
             <button id="restart-button">Play Again</button>
         </div>
     </div>
 
     <script>
-        const player = document.getElementById('player');
         const gameArea = document.getElementById('game-area');
+        const chocolatierContainer = document.getElementById('chocolatier-container');
+        const pipingBag = document.getElementById('piping-bag');
         const scoreDisplay = document.getElementById('score');
-        const missesDisplay = document.getElementById('misses');
+        const coinsDisplay = document.getElementById('coins');
         const levelDisplay = document.getElementById('level');
         const startScreen = document.getElementById('start-screen');
         const startButton = document.getElementById('start-button');
         const gameOverScreen = document.getElementById('game-over-screen');
         const finalScoreDisplay = document.getElementById('final-score');
-        const levelReachedDisplay = document.getElementById('level-reached');
+        const coinsEarnedDisplay = document.getElementById('coins-earned');
         const restartButton = document.getElementById('restart-button');
 
         let score = 0;
-        let misses = 0;
+        let coins = 0;
         let level = 1;
-        let playerX = 50; // Percentage for player position
-        let fallingItems = [];
-        let gameInterval;
-        let itemDropInterval;
-        let gameRunning = false;
+        let fallingSpeed = 2; // Base falling speed in pixels per frame
+        let pastryDropInterval = 1500; // Base interval between pastry drops in milliseconds
+        let gameActive = false;
+        let fallingPastries = [];
+        const pastryTypes = ['muffin', 'chocolate-cake', 'chocolate-praline', 'croissant', 'fruit-tart'];
+        let targetPastry = null;
+        const shootSpeed = 10; // Pixels per frame for the shot
+        const scoreToLevelUp = 5; // Number of pastries to score to level up
 
-        const ITEM_TYPES = ['muffin', 'cake'];
-        const PLAYER_SPEED = 10; // Pixels per move
-        const MAX_MISSES = 5;
-        const ITEMS_PER_LEVEL = 10; // Number of items to catch to level up
-
-        // Game state and difficulty
-        let baseFallSpeed = 3; // pixels per frame
-        let dropFrequency = 1500; // milliseconds
-
-        function updatePlayerPosition() {
-            player.style.left = `${playerX}%`;
-        }
-
-        function createFallingItem() {
-            if (!gameRunning) return;
-
-            const itemType = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
-            const item = document.createElement('div');
-            item.classList.add('falling-item', itemType);
-            item.style.left = `${Math.random() * (gameArea.offsetWidth - 50)}px`; // Random X position
-            gameArea.appendChild(item);
-            fallingItems.push(item);
-
-            let currentFallSpeed = baseFallSpeed + (level - 1) * 0.5; // Speed increases with level
-            let itemFallInterval = setInterval(() => {
-                let top = parseInt(item.style.top) || 0;
-                item.style.top = `${top + currentFallSpeed}px`;
-
-                // Check for collision with player
-                if (
-                    top + item.offsetHeight >= player.offsetTop &&
-                    top <= player.offsetTop + player.offsetHeight &&
-                    parseInt(item.style.left) + item.offsetWidth >= player.offsetLeft &&
-                    parseInt(item.style.left) <= player.offsetLeft + player.offsetWidth
-                ) {
-                    // Hit!
-                    score++;
-                    scoreDisplay.textContent = score;
-                    item.classList.add('caught-animation');
-                    item.addEventListener('animationend', () => item.remove());
-                    clearInterval(itemFallInterval);
-                    fallingItems = fallingItems.filter(i => i !== item);
-                    checkLevelUp();
-                }
-
-                // Check if item went off-screen
-                if (top > gameArea.offsetHeight) {
-                    misses++;
-                    missesDisplay.textContent = misses;
-                    item.classList.add('missed-animation');
-                    item.addEventListener('animationend', () => item.remove());
-                    clearInterval(itemFallInterval);
-                    fallingItems = fallingItems.filter(i => i !== item);
-                    checkGameOver();
-                }
-            }, 20); // Update every 20ms
-        }
-
-        function checkLevelUp() {
-            if (score >= level * ITEMS_PER_LEVEL) {
-                level++;
-                levelDisplay.textContent = level;
-                // Increase difficulty
-                dropFrequency = Math.max(500, dropFrequency - 100); // Faster drops, with a minimum
-                clearInterval(itemDropInterval);
-                itemDropInterval = setInterval(createFallingItem, dropFrequency);
-            }
-        }
-
-        function checkGameOver() {
-            if (misses >= MAX_MISSES) {
-                endGame();
-            }
-        }
+        // Interval IDs for clearing
+        let dropInterval;
+        let gameUpdateInterval;
 
         function startGame() {
             score = 0;
-            misses = 0;
+            coins = 0;
             level = 1;
-            playerX = 50;
-            baseFallSpeed = 3;
-            dropFrequency = 1500;
-            fallingItems.forEach(item => item.remove());
-            fallingItems = [];
+            fallingSpeed = 2;
+            pastryDropInterval = 1500;
             scoreDisplay.textContent = score;
-            missesDisplay.textContent = misses;
+            coinsDisplay.textContent = coins;
             levelDisplay.textContent = level;
-            player.style.left = '50%';
+            gameActive = true;
+            
+            // Clear any existing pastries and intervals
+            fallingPastries.forEach(pastry => pastry.remove());
+            fallingPastries = [];
+            targetPastry = null;
+            clearInterval(dropInterval);
+            clearInterval(gameUpdateInterval);
+
             startScreen.style.display = 'none';
             gameOverScreen.style.display = 'none';
-            gameRunning = true;
-
-            itemDropInterval = setInterval(createFallingItem, dropFrequency);
+            
+            dropInterval = setInterval(dropPastry, pastryDropInterval);
+            gameUpdateInterval = setInterval(updateGame, 20);
         }
 
         function endGame() {
-            gameRunning = false;
-            clearInterval(itemDropInterval);
-            fallingItems.forEach(item => item.remove()); // Remove all remaining falling items
-            finalScoreDisplay.textContent = `Score: ${score}`;
-            levelReachedDisplay.textContent = `Level Reached: ${level}`;
+            gameActive = false;
+            clearInterval(dropInterval);
+            clearInterval(gameUpdateInterval);
+            
+            // Remove any remaining falling pastries
+            fallingPastries.forEach(pastry => pastry.remove());
+            fallingPastries = [];
+
+            finalScoreDisplay.textContent = `Final Score: ${score}`;
+            coinsEarnedDisplay.textContent = `Coins Earned: ${coins}`;
             gameOverScreen.style.display = 'flex';
         }
 
-        // Player movement
-        document.addEventListener('keydown', (e) => {
-            if (!gameRunning) return;
+        function dropPastry() {
+            if (!gameActive) return;
 
-            const playerWidth = player.offsetWidth;
-            const gameAreaWidth = gameArea.offsetWidth;
-            const playerLeftPx = playerX / 100 * gameAreaWidth;
+            const pastryType = pastryTypes[Math.floor(Math.random() * pastryTypes.length)]; // Randomly pick a pastry type
+            const pastry = document.createElement('div');
+            pastry.classList.add('pastry', pastryType);
+            pastry.style.left = `${Math.random() * (gameArea.offsetWidth - 50)}px`; // Random X position
+            gameArea.appendChild(pastry);
+            fallingPastries.push(pastry);
 
-            if (e.key === 'ArrowLeft') {
-                playerX = Math.max(0, playerX - (PLAYER_SPEED / gameAreaWidth) * 100);
-            } else if (e.key === 'ArrowRight') {
-                playerX = Math.min(100 - (playerWidth / gameAreaWidth) * 100, playerX + (PLAYER_SPEED / gameAreaWidth) * 100);
+            // Randomly make a pastry glow, prioritizing a new target if none exists
+            if (!targetPastry || Math.random() < 0.2) { // 20% chance to glow a new one, or if no current target
+                if (targetPastry) {
+                    targetPastry.classList.remove('glowing'); // Remove glow from old target
+                }
+                pastry.classList.add('glowing');
+                targetPastry = pastry;
             }
-            updatePlayerPosition();
-        });
+
+            // Individual fall interval for each pastry
+            let currentTop = -50;
+            const fallLoop = () => {
+                if (!gameActive || !pastry.parentNode) {
+                    return; // Stop if game is not active or pastry is removed
+                }
+                currentTop += fallingSpeed;
+                pastry.style.top = `${currentTop}px`;
+
+                if (currentTop > gameArea.offsetHeight) {
+                    pastry.remove();
+                    fallingPastries = fallingPastries.filter(p => p !== pastry);
+                    if (pastry === targetPastry) {
+                        targetPastry = null; // Clear target if it falls off screen
+                    }
+                } else {
+                    requestAnimationFrame(fallLoop);
+                }
+            };
+            requestAnimationFrame(fallLoop);
+        }
+
+        function shootPastry(event) {
+            if (!gameActive || !targetPastry) return;
+
+            const pipeRect = pipingBag.getBoundingClientRect();
+            const targetRect = targetPastry.getBoundingClientRect();
+
+            // Calculate start and target coordinates relative to game area
+            const gameAreaRect = gameArea.getBoundingClientRect();
+            const startX = (pipeRect.left + pipeRect.width / 2) - gameAreaRect.left;
+            const startY = (pipeRect.top) - gameAreaRect.top; // Shoot from top of piping bag
+            const targetX = (targetRect.left + targetRect.width / 2) - gameAreaRect.left;
+            const targetY = (targetRect.top + targetRect.height / 2) - gameAreaRect.top;
+
+            const shot = document.createElement('div');
+            shot.classList.add('shot');
+            shot.style.left = `${startX - 5}px`; // Adjust for shot width
+            shot.style.top = `${startY}px`;
+            gameArea.appendChild(shot);
+
+            // Calculate direction vector
+            const dx = targetX - startX;
+            const dy = targetY - startY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const unitDx = dx / distance;
+            const unitDy = dy / distance;
+
+            let currentShotX = startX;
+            let currentShotY = startY;
+
+            const shotLoop = () => {
+                if (!gameActive || !shot.parentNode || !targetPastry) {
+                    shot.remove();
+                    return;
+                }
+
+                currentShotX += unitDx * shootSpeed;
+                currentShotY += unitDy * shootSpeed;
+
+                shot.style.left = `${currentShotX}px`;
+                shot.style.top = `${currentShotY}px`;
+
+                // Check for collision with the target pastry
+                const currentTargetRect = targetPastry.getBoundingClientRect();
+                const shotRect = shot.getBoundingClientRect();
+
+                // Convert shotRect to be relative to gameArea for accurate collision detection
+                const relativeShotRect = {
+                    left: shotRect.left - gameAreaRect.left,
+                    right: shotRect.right - gameAreaRect.left,
+                    top: shotRect.top - gameAreaRect.top,
+                    bottom: shotRect.bottom - gameAreaRect.top
+                };
+
+                // Convert targetRect to be relative to gameArea
+                const relativeTargetRect = {
+                    left: currentTargetRect.left - gameAreaRect.left,
+                    right: currentTargetRect.right - gameAreaRect.left,
+                    top: currentTargetRect.top - gameAreaRect.top,
+                    bottom: currentTargetRect.bottom - gameAreaRect.top
+                };
+
+                if (
+                    relativeShotRect.left < relativeTargetRect.right &&
+                    relativeShotRect.right > relativeTargetRect.left &&
+                    relativeShotRect.top < relativeTargetRect.bottom &&
+                    relativeShotRect.bottom > relativeTargetRect.top
+                ) {
+                    // Hit!
+                    score++;
+                    coins += 10;
+                    scoreDisplay.textContent = score;
+                    coinsDisplay.textContent = coins;
+                    targetPastry.remove();
+                    fallingPastries = fallingPastries.filter(p => p !== targetPastry); // Remove from array
+                    targetPastry = null; // Clear the target
+                    shot.remove(); // Remove the shot
+                    checkLevelUp();
+                } else if (currentShotY < -shot.offsetHeight || currentShotX < -shot.offsetWidth || currentShotX > gameArea.offsetWidth) {
+                    // Shot went off-screen
+                    shot.remove();
+                } else {
+                    requestAnimationFrame(shotLoop);
+                }
+            };
+            requestAnimationFrame(shotLoop);
+        }
+
+        function checkLevelUp() {
+            if (score % scoreToLevelUp === 0 && score > 0) {
+                level++;
+                levelDisplay.textContent = level;
+                fallingSpeed += 0.5; // Increase falling speed
+                pastryDropInterval = Math.max(500, pastryDropInterval - 100); // Increase drop frequency (minimum 500ms)
+                
+                // Restart drop interval with new frequency
+                clearInterval(dropInterval);
+                dropInterval = setInterval(dropPastry, pastryDropInterval);
+            }
+        }
+
+        // Main game loop for general updates (e.g., checking for missed pastries)
+        function updateGame() {
+            if (!gameActive) return;
+
+            // Remove pastries that have fallen off the screen
+            fallingPastries = fallingPastries.filter(pastry => {
+                if (pastry.parentNode && (parseInt(pastry.style.top) || -50) > gameArea.offsetHeight) {
+                    pastry.remove();
+                    if (pastry === targetPastry) {
+                        targetPastry = null; // If the target pastry is missed, clear it
+                    }
+                    return false; // Remove from array
+                }
+                return true; // Keep in array
+            });
+
+            // If no target pastry, find a new one to glow
+            if (!targetPastry && fallingPastries.length > 0) {
+                const availablePastries = fallingPastries.filter(p => !p.classList.contains('glowing'));
+                if (availablePastries.length > 0) {
+                    const newTarget = availablePastries[Math.floor(Math.random() * availablePastries.length)];
+                    newTarget.classList.add('glowing');
+                    targetPastry = newTarget;
+                }
+            }
+        }
 
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
+        gameArea.addEventListener('click', shootPastry); // Event listener for shooting
 
-        // Initialize player position
-        updatePlayerPosition();
     </script>
 </body>
 </html>
