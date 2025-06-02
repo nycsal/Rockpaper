@@ -35,6 +35,41 @@
             font-size: 18px;
             text-shadow: 0 0 10px #00ffff;
             z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #00ffff;
+        }
+
+        .hud div {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            min-width: 150px;
+        }
+
+        .score-value {
+            color: #ffff00;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffff00;
+        }
+
+        .lives-value {
+            color: #ff4444;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff4444;
+        }
+
+        .level-value {
+            color: #44ff44;
+            font-weight: bold;
+            text-shadow: 0 0 10px #44ff44;
+        }
+
+        .wave-value {
+            color: #ff44ff;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff44ff;
         }
 
         .game-over {
@@ -93,14 +128,14 @@
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     
     <div class="hud">
-        <div>Score: <span id="score">0</span></div>
-        <div>Lives: <span id="lives">3</span></div>
-        <div>Level: <span id="level">1</span></div>
-        <div>Wave: <span id="wave">1</span></div>
+        <div>Score: <span id="score" class="score-value">0</span></div>
+        <div>Lives: <span id="lives" class="lives-value">3</span></div>
+        <div>Level: <span id="level" class="level-value">1</span></div>
+        <div>Wave: <span id="wave" class="wave-value">1</span></div>
     </div>
 
     <div class="start-screen" id="startScreen">
-        <h1>🚀 SPACE DEFENDER 🚀</h1>
+        <h1>🚀 MARYAM'S SPACE - STAY OUT 😎</h1>
         <p class="pulse">Tap to Start</p>
         <br>
         <p style="font-size: 16px;">Touch & drag to move<br>Continuous fire while touching</p>
@@ -163,18 +198,18 @@
         const powerUpTypes = ['rapidFire', 'multiShot', 'shield'];
         let playerPowerUps = { rapidFire: 0, multiShot: 0, shield: 0 };
 
-        // Enemy formations
+        // Enemy formations - More enemies per level
         const enemyFormations = [
             // Level 1: Simple grid
-            { rows: 3, cols: 8, spacing: 60, speed: 1, health: 1 },
+            { rows: 4, cols: 10, spacing: 60, speed: 1, health: 1 },
             // Level 2: Diamond formation
-            { rows: 5, cols: 6, spacing: 70, speed: 1.5, health: 1 },
+            { rows: 6, cols: 8, spacing: 70, speed: 1.5, health: 1 },
             // Level 3: V formation
-            { rows: 4, cols: 10, spacing: 50, speed: 2, health: 2 },
+            { rows: 5, cols: 12, spacing: 50, speed: 2, health: 2 },
             // Level 4: Complex pattern
-            { rows: 6, cols: 8, spacing: 55, speed: 2.5, health: 2 },
+            { rows: 7, cols: 10, spacing: 55, speed: 2.5, health: 2 },
             // Level 5: Boss level
-            { rows: 2, cols: 12, spacing: 45, speed: 3, health: 3 }
+            { rows: 4, cols: 15, spacing: 45, speed: 3, health: 3 }
         ];
 
         // Input handling
@@ -427,8 +462,8 @@
                 player.y += player.speed;
             }
 
-            // Player shooting - Continuous fire while touching or holding space
-            const fireRate = playerPowerUps.rapidFire > 0 ? 3 : 8;
+            // Player shooting - Better spaced continuous fire
+            const fireRate = playerPowerUps.rapidFire > 0 ? 100 : 150; // Milliseconds between shots
             if ((keys['Space'] || isTouching) && gameState === 'playing') {
                 if (!player.lastShot || Date.now() - player.lastShot > fireRate) {
                     shoot();
@@ -457,21 +492,21 @@
                     moveDown = true;
                 }
 
-                // Enemy shooting - Reduced frequency
+                // Enemy shooting - Balanced difficulty
                 enemy.shootTimer--;
                 if (enemy.shootTimer <= 0) {
-                    // Reduced shooting frequency - only some enemies shoot
-                    if (Math.random() < 0.3) { // Only 30% chance to shoot
+                    // More enemies shoot, but with reasonable frequency
+                    if (Math.random() < 0.5 + (level * 0.1)) { // Increases with level
                         enemyBullets.push({
                             x: enemy.x + enemy.width / 2,
                             y: enemy.y + enemy.height,
                             width: 3,
                             height: 6,
-                            speed: 2 + level * 0.3, // Slower bullets
+                            speed: 2.5 + level * 0.4, // Moderate speed increase
                             color: '#ff4444'
                         });
                     }
-                    enemy.shootTimer = 90 + Math.random() * 180; // Longer intervals between shots
+                    enemy.shootTimer = 80 + Math.random() * 120; // Reasonable intervals
                 }
             });
 
@@ -518,13 +553,18 @@
                         gameState = 'gameOver';
                         document.getElementById('finalScore').textContent = score;
                         document.getElementById('gameOver').innerHTML = 
-                            '<h1>CONGRATULATIONS!</h1><p>You completed all levels!</p><p>Final Score: ' + score + '</p><p class="pulse">Tap to Play Again</p>';
+                            '<h1>🎉 CONGRATULATIONS! 🎉</h1><p>You conquered Maryam\'s Space!</p><p>Final Score: ' + score + '</p><p class="pulse">Tap to Play Again</p>';
                         document.getElementById('gameOver').style.display = 'block';
                         return;
                     }
+                    // Show level completion message briefly
+                    showLevelComplete();
                 }
-                spawnEnemies();
-                updateHUD();
+                // Delay before spawning new enemies
+                setTimeout(() => {
+                    spawnEnemies();
+                    updateHUD();
+                }, 1500);
             }
 
             // Game over condition
@@ -548,7 +588,7 @@
                         createParticles(enemyBullet.x, enemyBullet.y, '#ffaa00', 3);
                         bullets.splice(bulletIndex, 1);
                         enemyBullets.splice(enemyBulletIndex, 1);
-                        score += 10; // Bonus points for shooting down enemy bullets
+                        score += 25; // Better bonus points for shooting down enemy bullets
                         updateHUD();
                     }
                 });
@@ -727,6 +767,25 @@
             document.getElementById('lives').textContent = lives;
             document.getElementById('level').textContent = level;
             document.getElementById('wave').textContent = wave;
+        }
+
+        function showLevelComplete() {
+            const levelCompleteDiv = document.createElement('div');
+            levelCompleteDiv.style.position = 'absolute';
+            levelCompleteDiv.style.top = '50%';
+            levelCompleteDiv.style.left = '50%';
+            levelCompleteDiv.style.transform = 'translate(-50%, -50%)';
+            levelCompleteDiv.style.color = '#44ff44';
+            levelCompleteDiv.style.fontSize = '28px';
+            levelCompleteDiv.style.textAlign = 'center';
+            levelCompleteDiv.style.textShadow = '0 0 20px #44ff44';
+            levelCompleteDiv.style.zIndex = '300';
+            levelCompleteDiv.innerHTML = `<h2>🎊 LEVEL ${level-1} COMPLETE! 🎊</h2><p>Entering Level ${level}...</p>`;
+            document.body.appendChild(levelCompleteDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(levelCompleteDiv);
+            }, 1500);
         }
 
         function gameLoop() {
