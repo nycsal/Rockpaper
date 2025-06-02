@@ -103,7 +103,7 @@
         <h1>🚀 SPACE DEFENDER 🚀</h1>
         <p class="pulse">Tap to Start</p>
         <br>
-        <p style="font-size: 16px;">Swipe to move<br>Tap to shoot</p>
+        <p style="font-size: 16px;">Touch & drag to move<br>Continuous fire while touching</p>
     </div>
 
     <div class="game-over" id="gameOver">
@@ -117,7 +117,7 @@
     </div>
 
     <div class="touch-controls">
-        Mobile: Swipe to Move | Tap to Shoot
+        Mobile: Touch & Drag to Move | Continuous Fire
     </div>
 
     <script>
@@ -214,10 +214,8 @@
                 startGame();
             } else if (gameState === 'gameOver') {
                 resetGame();
-            } else if (gameState === 'playing') {
-                // Tap to shoot
-                shoot();
             }
+            // Remove single tap shooting - now using continuous fire
         });
 
         canvas.addEventListener('touchmove', (e) => {
@@ -429,9 +427,9 @@
                 player.y += player.speed;
             }
 
-            // Player shooting
-            if (keys['Space']) {
-                const fireRate = playerPowerUps.rapidFire > 0 ? 5 : 15;
+            // Player shooting - Continuous fire while touching or holding space
+            const fireRate = playerPowerUps.rapidFire > 0 ? 3 : 8;
+            if ((keys['Space'] || isTouching) && gameState === 'playing') {
                 if (!player.lastShot || Date.now() - player.lastShot > fireRate) {
                     shoot();
                     player.lastShot = Date.now();
@@ -459,18 +457,21 @@
                     moveDown = true;
                 }
 
-                // Enemy shooting
+                // Enemy shooting - Reduced frequency
                 enemy.shootTimer--;
                 if (enemy.shootTimer <= 0) {
-                    enemyBullets.push({
-                        x: enemy.x + enemy.width / 2,
-                        y: enemy.y + enemy.height,
-                        width: 3,
-                        height: 6,
-                        speed: 3 + level * 0.5,
-                        color: '#ff4444'
-                    });
-                    enemy.shootTimer = 60 + Math.random() * 120;
+                    // Reduced shooting frequency - only some enemies shoot
+                    if (Math.random() < 0.3) { // Only 30% chance to shoot
+                        enemyBullets.push({
+                            x: enemy.x + enemy.width / 2,
+                            y: enemy.y + enemy.height,
+                            width: 3,
+                            height: 6,
+                            speed: 2 + level * 0.3, // Slower bullets
+                            color: '#ff4444'
+                        });
+                    }
+                    enemy.shootTimer = 90 + Math.random() * 180; // Longer intervals between shots
                 }
             });
 
@@ -535,6 +536,24 @@
         }
 
         function checkCollisions() {
+            // Bullet vs Enemy Bullet (player can shoot down enemy bullets)
+            bullets.forEach((bullet, bulletIndex) => {
+                enemyBullets.forEach((enemyBullet, enemyBulletIndex) => {
+                    if (bullet.x < enemyBullet.x + enemyBullet.width &&
+                        bullet.x + bullet.width > enemyBullet.x &&
+                        bullet.y < enemyBullet.y + enemyBullet.height &&
+                        bullet.y + bullet.height > enemyBullet.y) {
+                        
+                        // Destroy both bullets
+                        createParticles(enemyBullet.x, enemyBullet.y, '#ffaa00', 3);
+                        bullets.splice(bulletIndex, 1);
+                        enemyBullets.splice(enemyBulletIndex, 1);
+                        score += 10; // Bonus points for shooting down enemy bullets
+                        updateHUD();
+                    }
+                });
+            });
+
             // Bullet vs Enemy
             bullets.forEach((bullet, bulletIndex) => {
                 enemies.forEach((enemy, enemyIndex) => {
