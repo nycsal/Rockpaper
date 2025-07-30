@@ -122,16 +122,21 @@
     </div>
   </div>
   <script>
-    // Utility functions
+    // --- Core LocalStorage Functions ---
     function saveProfiles(profiles) {
       localStorage.setItem('emProfiles', JSON.stringify(profiles));
     }
     function loadProfiles() {
-      try { return JSON.parse(localStorage.getItem('emProfiles')) || []; }
-      catch { return []; }
+      let raw = localStorage.getItem('emProfiles');
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
     }
-    // Main state
-    let profiles = loadProfiles(); // [{name, notes:[{type,content,time}]}]
+
+    let profiles = loadProfiles();
     let selectedIdx = null;
 
     function updateProfileList() {
@@ -144,7 +149,6 @@
         btn.onclick = () => { selectedIdx = i; showProfile(); };
         list.appendChild(btn);
       });
-      if (profiles.length < 20) list.appendChild(document.createTextNode(''));
     }
 
     function showProfile() {
@@ -190,7 +194,6 @@
       });
     }
 
-    // Event Listeners
     document.getElementById('new-profile-form').onsubmit = function(e){
       e.preventDefault();
       let name = document.getElementById('profile-name-input').value.trim();
@@ -204,7 +207,7 @@
         return;
       }
       profiles.push({name, notes:[]});
-      saveProfiles(profiles);
+      saveProfiles(profiles); // save immediately after adding profile
       selectedIdx = profiles.length - 1;
       updateProfileList();
       showProfile();
@@ -221,16 +224,20 @@
         type,
         time: Date.now()
       });
-      saveProfiles(profiles);
+      saveProfiles(profiles); // save immediately after adding note
       showProfile();
       document.getElementById('note-content').value = '';
     };
 
-    // Initial load
-    updateProfileList();
-
-    // If at least one profile, show the first by default
-    if (profiles.length) { selectedIdx = 0; showProfile(); }
+    // Remain on selected employee after reload if possible
+    window.onload = function() {
+      profiles = loadProfiles();
+      updateProfileList();
+      if (profiles.length) {
+        selectedIdx = 0;
+        showProfile();
+      }
+    };
   </script>
 </body>
 </html>
