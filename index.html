@@ -1,243 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Employee Vibes Tracker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KakaReza Tasks</title>
   <style>
-    :root {
-      --positive: #a8ff60;
-      --negative: #ff8787;
-      --project: #60d4ff;
-      --bg: #fff9e5;
-      --header: #ffd34e;
-      --accent: #ffb347;
-      --button: #6e64ff;
-      --button-hover: #3c3573;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap');
+
     body {
-      background: var(--bg);
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0; padding: 0;
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh;
+      margin: 0;
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(to bottom right, #f8d7e0, #e0f7fa);
+      color: #333;
     }
+
     header {
-      background: var(--header);
-      width: 100vw;
       text-align: center;
-      padding: 20px 0 12px 0;
-      font-size: 2em;
-      font-weight: bold;
-      color: #383300;
-      box-shadow: 0 2px 10px #faecc0;
-    }
-    #container {
-      width: 98%;
-      max-width: 500px;
-      margin: 0 auto;
-      background: white;
-      padding: 16px;
-      border-radius: 17px;
-      box-shadow: 0 2px 14px #eadb9a30;
-      margin-top: 18px;
-    }
-    .profile-list {
-      margin-bottom: 16px;
-    }
-    .profile-btn, .action-btn {
-      background: var(--button);
+      background: #ff6f61;
+      padding: 20px;
       color: white;
-      border: none;
-      border-radius: 11px;
-      padding: 10px 20px;
-      font-size: 1em;
-      cursor: pointer;
-      margin: 3px 5px;
-      transition: background 0.18s;
+      font-size: 2em;
+      animation: fadeIn 1s ease-out;
     }
-    .profile-btn.selected {
-      background: var(--accent);
-      color: #383300;
-      font-weight: bold;
+
+    main {
+      padding: 20px;
+      max-width: 1000px;
+      margin: auto;
     }
-    .profile-btn:hover, .action-btn:hover {
-      background: var(--button-hover);
+
+    .section {
+      margin-bottom: 30px;
+      background: #ffffffcc;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      animation: fadeInUp 1s ease-out;
     }
-    #new-profile-form {
+
+    .member-list, .chore-list {
       display: flex;
-      margin: 12px 0;
-      gap: 8px;
+      flex-wrap: wrap;
+      gap: 15px;
     }
-    #new-profile-form input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ffd34e; }
-    h2 { margin: 0.5em 0 0.4em 0; }
-    .notes-list { margin: 0; padding: 0; list-style: none; }
-    .note {
-      margin-bottom: 10px;
+
+    .member {
+      border-radius: 10px;
+      background: #f6f6f6;
+      padding: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+      flex: 1 0 200px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .member:hover {
+      background: #cdf0ea;
+    }
+
+    button, select, input {
+      padding: 10px;
+      border: none;
       border-radius: 8px;
-      padding: 9px 13px;
-      display: flex; flex-direction: column;
-      box-shadow: 0 1px 4px #fff9b340;
+      margin: 5px 0;
+      font-size: 1em;
     }
-    .note.positive { background: var(--positive); }
-    .note.negative { background: var(--negative); }
-    .note.project { background: var(--project); }
-    .time { font-size: 0.85em; color: #555; margin-bottom: 2px; }
-    .type-label { font-size: 0.92em; font-weight: bold; }
-    .note-content { font-size: 1em; margin: 5px 0 0 0; }
-    .del-btn {
-      margin-left: auto; background: #fd6262; color: white; border: none;
-      border-radius: 8px; padding: 3px 11px; cursor: pointer; font-size: 0.9em;
-      transition: background 0.17s;
+
+    button {
+      background: #ff6f61;
+      color: white;
+      cursor: pointer;
     }
-    .del-btn:hover { background: #333; }
-    @media (max-width: 500px) {
-      #container { padding: 5px; }
-      header { font-size: 1.2em; }
+
+    button:hover {
+      background: #ff3b2f;
+    }
+
+    .hearts {
+      color: red;
+      font-size: 1.2em;
+      animation: pulse 1s infinite alternate;
+    }
+
+    .task {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f9f9f9;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .complete-btn {
+      background: #29c76f;
+    }
+
+    .summary {
+      font-size: 1.4em;
+      color: #333;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.2); }
     }
   </style>
 </head>
 <body>
-  <header>🎉 Employee Vibes & Projects Tracker 🎈</header>
-  <div id="container">
-    <div id="profiles-section">
-      <div class="profile-list" id="profile-list"></div>
-      <form id="new-profile-form" autocomplete="off">
-        <input id="profile-name-input" type="text" placeholder="Enter employee name" maxlength="28" required>
-        <button type="submit" class="action-btn">Create Profile</button>
-      </form>
+  <header>KakaReza Tasks</header>
+  <main>
+    <div class="section">
+      <h2>Add a Family Member</h2>
+      <input type="text" id="memberName" placeholder="Enter family member name"/>
+      <button onclick="addMember()">Add Member</button>
+
+      <div class="member-list" id="memberList"></div>
     </div>
-    <div id="profile-details" style="display:none">
-      <h2 id="profile-title"></h2>
-      <form id="note-form" autocomplete="off">
-        <select id="note-type">
-          <option value="positive">Positive 🌟</option>
-          <option value="negative">Negative ⚠️</option>
-          <option value="project">Project 📁</option>
-        </select>
-        <input id="note-content" type="text" placeholder="What happened? (max 80 chars)" maxlength="80" required>
-        <button type="submit" class="action-btn">Add Note</button>
-      </form>
-      <ul class="notes-list" id="notes-list"></ul>
+
+    <div class="section" id="choreSection" style="display:none">
+      <h2>Assign Chore to <span id="selectedMemberName"></span></h2>
+      <select id="choreSelect"></select><br/>
+      <label>Due Date: </label>
+      <input type="date" id="dueDate"/><br/>
+      <button onclick="assignChore()">Assign Chore</button>
+      <div id="assignedTasks"></div>
     </div>
-  </div>
+
+    <div class="section">
+      <h2>Hearts Earned Summary ❤️</h2>
+      <div id="summaryList"></div>
+    </div>
+  </main>
+
   <script>
-    // --- Core LocalStorage Functions ---
-    function saveProfiles(profiles) {
-      localStorage.setItem('emProfiles', JSON.stringify(profiles));
-    }
-    function loadProfiles() {
-      let raw = localStorage.getItem('emProfiles');
-      if (!raw) return [];
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return [];
-      }
+    const members = {};
+    const choreList = [
+      "Make your bed", "Brush your teeth", "Take out the trash", "Walk the dog",
+      "Water houseplants", "Help set the table", "Help clear the table", "Vacuum the living room",
+      "Clean your room", "Fold laundry", "Bring groceries inside", "Organize your bookshelf",
+      "Sweep porch", "Mow the lawn", "Rake leaves", "Weed the garden", "Wash the car",
+      "Help dad organize tools", "Help mom with emails", "Help dad clean garage",
+      "Feed pets", "Clean up toys", "Recycle bottles", "Wash dishes", "Dry dishes",
+      "Pack lunchbox", "Organize school bag", "Check the mail", "Load dishwasher",
+      "Clean bathroom mirror", "Clean sink", "Dusting shelves", "Pick up siblings from bus",
+      "Make snack for sibling", "Read to sibling", "Write thank-you card", "Take a nap",
+      "Sharpen pencils", "Write down daily goals", "Do 10 pushups for fun", "Fill bird feeder",
+      "Compost food scraps", "Help mom fold clothes", "Help dad mow garden", "Jog with dad",
+      "Organize family photos", "Water backyard plants", "Pet the cat nicely", "Help mom bake",
+      "Wipe counters", "Help dad email clients"
+    ];
+
+    const choreSelect = document.getElementById('choreSelect');
+    choreList.forEach(chore => {
+      let opt = document.createElement('option');
+      opt.textContent = chore;
+      choreSelect.appendChild(opt);
+    });
+
+    function addMember() {
+      const name = document.getElementById('memberName').value.trim();
+      if (!name || members[name]) return;
+      members[name] = { tasks: [], hearts: 0 };
+      updateMemberList();
+      updateSummary();
+      document.getElementById('memberName').value = '';
     }
 
-    let profiles = loadProfiles();
-    let selectedIdx = null;
-
-    function updateProfileList() {
-      const list = document.getElementById('profile-list');
-      list.innerHTML = '';
-      profiles.forEach((prof, i) => {
-        const btn = document.createElement('button');
-        btn.textContent = prof.name;
-        btn.className = 'profile-btn' + (selectedIdx === i ? ' selected':'');
-        btn.onclick = () => { selectedIdx = i; showProfile(); };
-        list.appendChild(btn);
+    function updateMemberList() {
+      const container = document.getElementById('memberList');
+      container.innerHTML = '';
+      Object.keys(members).forEach(name => {
+        let div = document.createElement('div');
+        div.className = 'member';
+        div.textContent = name;
+        div.onclick = () => selectMember(name);
+        container.appendChild(div);
       });
     }
 
-    function showProfile() {
-      if (selectedIdx === null) return;
-      document.getElementById('profile-details').style.display = '';
-      const prof = profiles[selectedIdx];
-      document.getElementById('profile-title').textContent = '🧑 ' + prof.name;
-      renderNotesList(prof.notes || []);
+    let selectedMember = null;
+
+    function selectMember(name) {
+      selectedMember = name;
+      document.getElementById('selectedMemberName').textContent = name;
+      document.getElementById('choreSection').style.display = 'block';
+      updateTaskList();
     }
 
-    function renderNotesList(notes) {
-      const ul = document.getElementById('notes-list');
-      ul.innerHTML = '';
-      if (notes.length === 0) {
-        ul.innerHTML = '<li style="color:#aaa; font-size:1em; text-align:center; margin-top:9px;">No notes yet.</li>';
-        return;
-      }
-      notes.slice().reverse().forEach((note, idx) => {
-        const li = document.createElement('li');
-        li.className = 'note ' + note.type;
+    function assignChore() {
+      const taskName = document.getElementById('choreSelect').value;
+      const due = document.getElementById('dueDate').value;
+      const difficulty = Math.floor(Math.random() * 10) + 1;
+      const chore = {
+        name: taskName,
+        assigned: new Date().toLocaleDateString(),
+        due: due,
+        difficulty: difficulty,
+        completed: false
+      };
+      members[selectedMember].tasks.push(chore);
+      updateTaskList();
+      updateSummary();
+    }
 
-        const tstr = new Date(note.time).toLocaleString();
-        li.innerHTML = `<span class="time">${tstr}</span>
-          <span class="type-label">${{
-            positive: "Positive 😊",
-            negative: "Negative 😕",
-            project: "Project 🚀"
-          }[note.type] || note.type}</span>
-          <span class="note-content">${note.content.replace(/</g, "&lt;")}</span>
+    function updateTaskList() {
+      const container = document.getElementById('assignedTasks');
+      container.innerHTML = '';
+      members[selectedMember].tasks.forEach((task, index) => {
+        let div = document.createElement('div');
+        div.className = 'task';
+        let hearts = '❤️'.repeat(task.difficulty);
+        div.innerHTML = `
+          <div>
+            <strong>${task.name}</strong><br/>
+            Difficulty: <span class="hearts">${hearts}</span><br/>
+            Due: ${task.due || 'N/A'}, Assigned: ${task.assigned}
+          </div>
         `;
-        const del = document.createElement('button');
-        del.textContent = 'Remove';
-        del.className = 'del-btn';
-        del.onclick = () => {
-          if (!confirm('Remove this entry?')) return;
-          let realIdx = notes.length - idx - 1;
-          profiles[selectedIdx].notes.splice(realIdx, 1);
-          saveProfiles(profiles);
-          showProfile();
-        };
-        li.appendChild(del);
-        ul.appendChild(li);
+
+        if (!task.completed) {
+          let btn = document.createElement('button');
+          btn.textContent = 'Mark Complete';
+          btn.className = 'complete-btn';
+          btn.onclick = () => markComplete(index);
+          div.appendChild(btn);
+        } else {
+          div.innerHTML += `<div class="hearts">✅ Completed</div>`;
+        }
+
+        container.appendChild(div);
       });
     }
 
-    document.getElementById('new-profile-form').onsubmit = function(e){
-      e.preventDefault();
-      let name = document.getElementById('profile-name-input').value.trim();
-      if (!name) return;
-      if (profiles.find(e=>e.name.toLowerCase() === name.toLowerCase())) {
-        alert('Employee already exists!');
-        return;
+    function markComplete(index) {
+      const task = members[selectedMember].tasks[index];
+      if (!task.completed) {
+        task.completed = true;
+        members[selectedMember].hearts += task.difficulty;
       }
-      if (profiles.length >= 20) {
-        alert('Limit: 20 employees.');
-        return;
-      }
-      profiles.push({name, notes:[]});
-      saveProfiles(profiles); // save immediately after adding profile
-      selectedIdx = profiles.length - 1;
-      updateProfileList();
-      showProfile();
-      document.getElementById('profile-name-input').value = '';
-    };
+      updateTaskList();
+      updateSummary();
+    }
 
-    document.getElementById('note-form').onsubmit = function(e){
-      e.preventDefault();
-      let content = document.getElementById('note-content').value.trim();
-      let type = document.getElementById('note-type').value;
-      if (selectedIdx===null || !content) return;
-      profiles[selectedIdx].notes.push({
-        content,
-        type,
-        time: Date.now()
+    function updateSummary() {
+      const container = document.getElementById('summaryList');
+      container.innerHTML = '';
+      Object.keys(members).forEach(name => {
+        let div = document.createElement('div');
+        div.className = 'summary';
+        div.innerHTML = `${name}: ❤️ ${members[name].hearts}`;
+        container.appendChild(div);
       });
-      saveProfiles(profiles); // save immediately after adding note
-      showProfile();
-      document.getElementById('note-content').value = '';
-    };
-
-    // Remain on selected employee after reload if possible
-    window.onload = function() {
-      profiles = loadProfiles();
-      updateProfileList();
-      if (profiles.length) {
-        selectedIdx = 0;
-        showProfile();
-      }
-    };
+    }
   </script>
 </body>
 </html>
